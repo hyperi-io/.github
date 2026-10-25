@@ -49,6 +49,12 @@ name: CI
         options: [core, full]
         description: "full runs the full test tier on this run."
 
+permissions:
+  contents: write # the hyperi-ci release job is the widest, and the called workflow is capped by this grant
+  packages: write # the hyperi-ci release job is the widest, and the called workflow is capped by this grant
+  issues: write # the hyperi-ci release job is the widest, and the called workflow is capped by this grant
+  pull-requests: write # the hyperi-ci release job is the widest, and the called workflow is capped by this grant
+
 jobs:
   ci:
     uses: hyperi-io/hyperi-ci/.github/workflows/ts-ci.yml@3eef97aed9438883c21e157ae46ac4afd03567d7 # v2.14.27
@@ -60,4 +66,12 @@ jobs:
       release-unoptimized: ${{ inputs.release-unoptimized || '' }}
       optimize-tier: ${{ inputs.optimize-tier || '' }}
       test-tier: ${{ inputs.test-tier || 'core' }}
-    secrets: inherit
+    secrets:
+      CONTAINER_MGT_APP_PRIVATE_KEY: ${{ secrets.CONTAINER_MGT_APP_PRIVATE_KEY }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      GH_APP_PRIVATE_KEY: ${{ secrets.GH_APP_PRIVATE_KEY }}
+      GITLEAKS_GH_ACTIONS_KEY: ${{ secrets.GITLEAKS_GH_ACTIONS_KEY }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}

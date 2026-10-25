@@ -128,6 +128,58 @@ jobs:
           done
           exit "$status"
 
+      - name: Each starter passes exactly the secrets its pinned hyperi-ci workflow declares
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          uv run --no-project --python 3.14 --with-requirements .github/ci-requirements.txt python - <<'PY'
+          import re
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          import yaml
+
+          pin = re.compile(r"hyperi-io/hyperi-ci/(\.github/workflows/[a-z-]+\.yml)@([0-9a-f]{40})\b")
+          problems = []
+          for template in sorted(Path("workflow-templates").glob("*.yml")):
+              text = template.read_text(encoding="utf-8")
+              match = pin.search(text)
+              if not match:
+                  problems.append(f"{template}: hyperi-ci workflow is not pinned by a 40-character SHA")
+                  continue
+              path, sha = match.groups()
+              fetched = subprocess.run(
+                  [
+                      "gh", "api", "-H", "Accept: application/vnd.github.raw+json",
+                      f"repos/hyperi-io/hyperi-ci/contents/{path}?ref={sha}",
+                  ],
+                  capture_output=True, text=True, encoding="utf-8", errors="replace", check=False,
+              )
+              if fetched.returncode != 0:
+                  problems.append(f"{template}: cannot read {path}@{sha}: {fetched.stderr.strip()}")
+                  continue
+              called = yaml.safe_load(fetched.stdout)
+              triggers = called.get("on", called.get(True)) or {}
+              declared = set(((triggers.get("workflow_call") or {}).get("secrets")) or {})
+              job = yaml.safe_load(text)["jobs"]["ci"]
+              passed = job.get("secrets")
+              if not isinstance(passed, dict):
+                  problems.append(f"{template}: secrets must be a named list, found {passed!r}")
+                  continue
+              passed = set(passed)
+              if "GITHUB_TOKEN" in passed:
+                  problems.append(f"{template}: GITHUB_TOKEN must not be listed")
+              for name in sorted(declared - passed):
+                  problems.append(f"{template}: {path}@{sha[:7]} declares secret {name}, the starter does not pass it")
+              for name in sorted(passed - declared):
+                  problems.append(f"{template}: passes secret {name}, which {path}@{sha[:7]} does not declare")
+          for line in problems:
+              print(f"::error::{line}")
+          sys.exit(1 if problems else 0)
+          PY
+
       - name: Published text is ASCII and carries no internal addresses
         shell: bash
         run: |
