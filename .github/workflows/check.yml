@@ -30,7 +30,7 @@ jobs:
         run: |
           shopt -s extglob nullglob
           forms=(.github/ISSUE_TEMPLATE/!(config).@(yml|yaml))
-          run() { uv run --no-project --with-requirements .github/ci-requirements.txt "$@"; }
+          run() { uv run --no-project --python 3.14 --with-requirements .github/ci-requirements.txt "$@"; }
           run check-jsonschema --builtin-schema vendor.github-issue-forms "${forms[@]}"
           run check-jsonschema --builtin-schema vendor.github-issue-config .github/ISSUE_TEMPLATE/config.yml
           run check-jsonschema --builtin-schema vendor.github-workflows .github/workflows/*.yml workflow-templates/*.yml
@@ -38,7 +38,7 @@ jobs:
       - name: Label set parses, and forms name only declared types and labels
         shell: bash
         run: |
-          uv run --no-project --with-requirements .github/ci-requirements.txt python - <<'PY'
+          uv run --no-project --python 3.14 --with-requirements .github/ci-requirements.txt python - <<'PY'
           import sys
           from pathlib import Path
 
@@ -78,7 +78,7 @@ jobs:
       - name: Workflow templates honour hyperi-ci's caller contract
         shell: bash
         run: |
-          uv run --no-project --with-requirements .github/ci-requirements.txt python - <<'PY'
+          uv run --no-project --python 3.14 --with-requirements .github/ci-requirements.txt python - <<'PY'
           import json
           import sys
           from pathlib import Path
