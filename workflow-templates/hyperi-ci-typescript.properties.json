@@ -1,0 +1,7 @@
+{
+  "name": "HyperI CI (TypeScript)",
+  "description": "Calls hyperi-ci's TypeScript workflow. Save it as .github/workflows/ci.yml, then run hyperi-ci init.",
+  "iconName": "octicon workflow",
+  "categories": ["Continuous integration", "TypeScript"],
+  "filePatterns": ["package.json$", "tsconfig.json$"]
+}

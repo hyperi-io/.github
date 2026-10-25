@@ -1,0 +1,39 @@
+name: Bug report
+description: Something that shipped does not work as documented.
+type: Bug
+body:
+  - type: markdown
+    attributes:
+      value: Found a security problem? Do not file it here. Follow the security policy instead.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you saw, and any error output.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: The shortest sequence that shows it.
+      placeholder: |
+        1.
+        2.
+        3.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The release, tag or commit you ran.
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, runtime and any config that matters.

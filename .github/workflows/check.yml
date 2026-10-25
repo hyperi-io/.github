@@ -1,0 +1,148 @@
+name: check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+
+      - name: Issue forms, chooser config and workflows match GitHub's schemas
+        shell: bash
+        run: |
+          shopt -s extglob nullglob
+          forms=(.github/ISSUE_TEMPLATE/!(config).@(yml|yaml))
+          run() { uv run --no-project --python 3.14 --with-requirements .github/ci-requirements.txt "$@"; }
+          run check-jsonschema --builtin-schema vendor.github-issue-forms "${forms[@]}"
+          run check-jsonschema --builtin-schema vendor.github-issue-config .github/ISSUE_TEMPLATE/config.yml
+          run check-jsonschema --builtin-schema vendor.github-workflows .github/workflows/*.yml workflow-templates/*.yml
+
+      - name: Label set parses, and forms name only declared types and labels
+        shell: bash
+        run: |
+          uv run --no-project --python 3.14 --with-requirements .github/ci-requirements.txt python - <<'PY'
+          import sys
+          from pathlib import Path
+
+          import yaml
+          from hyperi_ci.labels import load_manifest
+
+          path = Path("labels/labels.yaml")
+          raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+          problems = []
+          if raw.get("schema") != 1:
+              problems.append(f"{path}: schema must be 1, found {raw.get('schema')!r}")
+          manifest = load_manifest(path)
+          types = {t.name for t in manifest.types}
+          sections = (manifest.gate, manifest.waiting, manifest.flags, manifest.community)
+          declared = {label.name.casefold() for section in sections for label in section}
+          for program in manifest.programs.values():
+              declared |= {label.name.casefold() for label in program.labels}
+          for form in sorted(Path(".github/ISSUE_TEMPLATE").glob("*.y*ml")):
+              if form.stem == "config":
+                  continue
+              data = yaml.safe_load(form.read_text(encoding="utf-8")) or {}
+              if data.get("type") not in types:
+                  problems.append(f"{form}: type {data.get('type')!r} is not in labels.yaml types")
+              labels = data.get("labels") or []
+              if isinstance(labels, str):
+                  labels = [name.strip() for name in labels.split(",") if name.strip()]
+              for name in labels:
+                  if name.startswith(manifest.area_prefix):
+                      problems.append(f"{form}: {name!r} is a per-repo area label")
+                  elif name.casefold() not in declared:
+                      problems.append(f"{form}: label {name!r} is not declared in labels.yaml")
+          for line in problems:
+              print(f"::error::{line}")
+          sys.exit(1 if problems else 0)
+          PY
+
+      - name: Workflow templates honour hyperi-ci's caller contract
+        shell: bash
+        run: |
+          uv run --no-project --python 3.14 --with-requirements .github/ci-requirements.txt python - <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          from hyperi_ci.caller_audit import audit_text
+
+          problems = []
+          for template in sorted(Path("workflow-templates").glob("*.yml")):
+              props = template.with_suffix(".properties.json")
+              if not props.is_file():
+                  problems.append(f"{template}: no {props.name}")
+              else:
+                  meta = json.loads(props.read_text(encoding="utf-8"))
+                  for key in ("name", "description"):
+                      if not meta.get(key):
+                          problems.append(f"{props}: `{key}` is required")
+              report = audit_text(template.name, template.read_text(encoding="utf-8"))
+              if report.error:
+                  problems.append(f"{template}: {report.error}")
+              for finding in report.findings:
+                  problems.append(f"{template}: {finding.describe()}")
+          for line in problems:
+              print(f"::error::{line}")
+          sys.exit(1 if problems else 0)
+          PY
+
+      - name: Every hyperi-ci workflow a template calls exists at its ref
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          status=0
+          for template in workflow-templates/*.yml; do
+            ref=$(grep -oE 'hyperi-io/hyperi-ci/\.github/workflows/[a-z-]+\.yml@[A-Za-z0-9._-]+' "$template" || true)
+            if [ -z "$ref" ]; then
+              echo "::error::$template calls no hyperi-ci workflow"
+              status=1
+              continue
+            fi
+            file=${ref#hyperi-io/hyperi-ci/}
+            file=${file%@*}
+            tag=${ref##*@}
+            if ! gh api "repos/hyperi-io/hyperi-ci/contents/$file?ref=$tag" --silent; then
+              echo "::error::$template calls $ref, which does not exist"
+              status=1
+            fi
+          done
+          exit "$status"
+
+      - name: Published text is ASCII and carries no internal addresses
+        shell: bash
+        run: |
+          status=0
+          if grep -rnP --exclude-dir=.git '[^\x00-\x7F]' .; then
+            echo "::error::non-ASCII characters"
+            status=1
+          fi
+          if grep -rnEi --exclude-dir=.git '\b(10|127)\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\b|\b192\.168\.[0-9]{1,3}\.[0-9]{1,3}\b|\b172\.(1[6-9]|2[0-9]|3[01])\.[0-9]{1,3}\.[0-9]{1,3}\b|\.(internal|local|lan|corp)\b' .; then
+            echo "::error::private address or internal host name"
+            status=1
+          fi
+          emails=$(grep -rhoEi --exclude-dir=.git '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}' . | sort -u | grep -viE '^(security|opensource|sales)@hyperi\.io$' || true)
+          if [ -n "$emails" ]; then
+            echo "::error::email addresses outside the published contacts: $emails"
+            status=1
+          fi
+          exit "$status"
