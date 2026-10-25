@@ -1,0 +1,2 @@
+check-jsonschema==0.38.2
+hyperi-ci==2.14.27

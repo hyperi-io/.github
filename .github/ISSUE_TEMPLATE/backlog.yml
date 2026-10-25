@@ -1,0 +1,30 @@
+name: Backlog item
+description: Real work that is not scheduled yet.
+title: "backlog: "
+type: Task
+body:
+  - type: markdown
+    attributes:
+      value: Enough for someone to pick this up later without you in the room. Leave a section empty rather than writing TBD.
+  - type: textarea
+    id: what
+    attributes:
+      label: What
+      description: One or two sentences.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: What it fixes or unblocks. Skip it if that is obvious.
+  - type: textarea
+    id: design
+    attributes:
+      label: Design and notes
+      description: Sketch, constraints, links and prior art.
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What is in, and what is out.

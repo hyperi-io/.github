@@ -1,0 +1,17 @@
+name: Task
+description: Work that is not a bug or a feature, such as a chore, refactor, test or docs change.
+type: Task
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: One sentence on what done looks like.
+    validations:
+      required: true
+  - type: textarea
+    id: done-when
+    attributes:
+      label: Done when
+      description: The checks that close it.
+      placeholder: "- [ ] "

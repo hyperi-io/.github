@@ -1,0 +1,63 @@
+# Save as .github/workflows/ci.yml, because hyperi-ci release dispatches that file.
+# Run `hyperi-ci init` for .hyperi-ci.yaml, the Makefile and the commit hooks.
+
+name: CI
+
+"on":
+  push:
+    branches: ["**", "!gh-readonly-queue/**"]
+  pull_request:
+    branches: [$default-branch]
+  merge_group:
+    types: [checks_requested]
+  workflow_dispatch:
+    inputs:
+      tag:
+        type: string
+        required: false
+        default: ""
+        description: "Existing tag to re-publish. Leave empty and set from-head to release HEAD."
+      from-head:
+        type: string
+        required: false
+        default: ""
+        description: "'true' to release or retry the current HEAD. CI creates the tag."
+      bump:
+        type: string
+        required: false
+        default: "auto"
+        description: "Version for from-head: auto, patch, minor, or an exact X.Y.Z."
+      skip-optimize:
+        type: string
+        required: false
+        default: ""
+        description: "'true' to skip the optimisation stage for this run."
+      release-unoptimized:
+        type: string
+        required: false
+        default: ""
+        description: "'true' to allow, for this run only, a release built without optimisation."
+      optimize-tier:
+        type: string
+        required: false
+        default: ""
+        description: "'release' to build the release optimisation tier on a run that publishes nothing."
+      test-tier:
+        type: choice
+        required: false
+        default: "core"
+        options: [core, full]
+        description: "full runs the full test tier on this run."
+
+jobs:
+  ci:
+    uses: hyperi-io/hyperi-ci/.github/workflows/python-ci.yml@3eef97aed9438883c21e157ae46ac4afd03567d7 # v2.14.27
+    with:
+      tag: ${{ inputs.tag || '' }}
+      from-head: ${{ inputs.from-head || '' }}
+      bump: ${{ inputs.bump || 'auto' }}
+      skip-optimize: ${{ inputs.skip-optimize || '' }}
+      release-unoptimized: ${{ inputs.release-unoptimized || '' }}
+      optimize-tier: ${{ inputs.optimize-tier || '' }}
+      test-tier: ${{ inputs.test-tier || 'core' }}
+    secrets: inherit

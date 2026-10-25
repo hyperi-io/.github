@@ -1,0 +1,7 @@
+{
+  "name": "HyperI CI (Go)",
+  "description": "Calls hyperi-ci's Go workflow. Save it as .github/workflows/ci.yml, then run hyperi-ci init.",
+  "iconName": "octicon workflow",
+  "categories": ["Continuous integration", "Go"],
+  "filePatterns": ["go.mod$"]
+}
