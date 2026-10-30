@@ -1,3 +1,4 @@
+<!-- DO NOT EDIT. Published from hyperi-io/hyperi-licensing public/org-github/.github/CONTRIBUTING.md. Change it there: the next sync overwrites edits made here. -->
 # Contributing
 
 This guide covers every HyperI repository that has no CONTRIBUTING file of its own.

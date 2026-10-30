@@ -1,3 +1,4 @@
+<!-- DO NOT EDIT. Published from hyperi-io/hyperi-licensing public/org-github/.github/CODE_OF_CONDUCT.md. Change it there: the next sync overwrites edits made here. -->
 # Code of conduct
 
 Be decent to people. Critique the work, never the person.

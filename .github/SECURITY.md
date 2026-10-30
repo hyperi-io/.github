@@ -1,3 +1,4 @@
+<!-- DO NOT EDIT. Published from hyperi-io/hyperi-licensing public/org-github/.github/SECURITY.md. Change it there: the next sync overwrites edits made here. -->
 # Security policy
 
 This policy covers every HyperI repository that has no SECURITY.md of its own.
