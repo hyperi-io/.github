@@ -6,6 +6,24 @@ body:
   - type: markdown
     attributes:
       value: Found a security problem? Do not file it here. Follow the security policy instead.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you file
+      options:
+        - label: I searched open and closed issues and this is not a duplicate.
+          required: true
+        - label: I reproduced it on the version below.
+          required: true
+        - label: Logs and examples below contain no real hostnames, addresses, tokens or customer data.
+          required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The release, tag or commit you ran.
+    validations:
+      required: true
   - type: textarea
     id: what-happened
     attributes:
@@ -28,13 +46,35 @@ body:
         1.
         2.
         3.
-  - type: input
-    id: version
+    validations:
+      required: true
+  - type: textarea
+    id: facts
     attributes:
-      label: Version
-      description: The release, tag or commit you ran.
+      label: What you know
+      description: Things you ran or read, with output or file and line.
+  - type: textarea
+    id: cause
+    attributes:
+      label: Suspected cause
+      description: Step by step, input to wrong output. Say how confident you are and what would prove it wrong. Leave blank if you don't know.
   - type: textarea
     id: environment
     attributes:
       label: Environment
       description: OS, runtime and any config that matters.
+  - type: dropdown
+    id: ai-use
+    attributes:
+      label: AI use
+      options:
+        - None
+        - AI helped write this issue
+        - AI found or diagnosed the problem
+    validations:
+      required: true
+  - type: input
+    id: ai-detail
+    attributes:
+      label: AI tool and what you checked yourself
+      description: For example, "Claude, I reran the repro and read the code it pointed at".
