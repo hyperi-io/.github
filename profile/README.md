@@ -1,6 +1,6 @@
 # HyperI
 
-Software for collecting and analysing security and operational data in real time.
+Software and BYOC for collecting and ingestion for massive operational, security and situation awareness data in real time.
 
 ## Products
 
