@@ -1,6 +1,6 @@
 # HyperI
 
-Software and BYOC for collecting and ingestion for massive operational, security and situation awareness data in real time.
+Every source in. The whole picture out.
 
 ## Products
 
