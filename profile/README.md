@@ -11,7 +11,7 @@ More at https://hyperi.io.
 
 ## Open source
 
-- [scalo-rs](https://github.com/hyperi-io/scalo-rs) and [scalo-py](https://github.com/hyperi-io/scalo-py) -- the runtime our services share for config, logging, secrets and CLIs.
+- [scalo-rs](https://github.com/hyperi-io/scalo-rs) and [scalo-py](https://github.com/hyperi-io/scalo-py) -- the runtime for config, logging, secrets and CLIs at scale.
 - [factbook-rs](https://github.com/hyperi-io/factbook-rs) -- a self-maintaining fact enricher, IP geolocation included.
 - [logreducer](https://github.com/hyperi-io/logreducer) -- cut GB-scale logs down to a representative sample.
 - [git-scrub](https://github.com/hyperi-io/git-scrub) -- remove AI tool residue and accidental data spill from git history.
